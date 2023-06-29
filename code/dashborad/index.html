@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patient Monitoring System</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Sharp" rel="stylesheet" />
+  <script src="https://cdn.plot.ly/plotly-2.16.1.min.js"></script>
+  <style>
+    {{{payload.style}}}
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <aside>
+      <div class="top">
+        <div class="close" id="close-btn">
+
+        </div>
+      </div>
+
+    </aside>
+    <main>
+      <h1>Patient Monitoring System</h1>
+
+      <div class="bulb-container">
+        <div id="bulb" class="bulb"></div>
+        <input type="checkbox" id="toggle-btn" class="toggle-checkbox">
+        <label for="toggle-btn" class="toggle-label"></label>
+      </div>
+
+      
+      <div class="insights">
+        <div class="temperature">
+          <div class="middle">
+            <div class="left">
+              <h3>Temperature</h3>
+              <h1 id="temperature">0 C</h1>
+            </div>
+            <div class="icon">
+              <span class="material-symbols-sharp"> device_thermostat </span>
+            </div>
+          </div>
+        </div>
+        <!-- End of heartrate -->
+        <div class="heartrate">
+          <div class="middle">
+            <div class="left">
+              <h3>Heart Rate</h3>
+              <h1 id="heartrate">0 C</h1>
+            </div>
+            <div class="icon">
+              <span class="material-symbols-sharp">favorite</span>
+            </div>
+          </div>
+        </div>
+        <!-- End of heartrate -->
+        <div class="oxygen">
+          <div class="middle">
+            <div class="left">
+              <h3>Oxygen Saturation</h3>
+              <h1 id="oxygen">0 %</h1>
+            </div>
+            <div class="icon">
+              <span class="material-symbols-sharp">
+                  humidity_percentage
+                </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- End of humidity -->
+      </div>
+      <!-- End of Insights -->
+      <div class="histories">
+        <h2>Historical Charts</h2>
+        <div class="history-charts">
+          <div id="temperature-history" class="history-divs"></div>
+          <div id="oxygen-history" class="oxygen-divs"></div>
+          <div id="heartrate-history" class="history-divs"></div>
+        </div>
+      </div>
+    </main>
+    <div class="right">
+      <div class="top">
+        <button id="menu-btn">
+            <span class="material-symbols-sharp"> menu </span>
+          </button>
+        <div class="theme-toggler">
+          <span class="material-symbols-sharp active"> light_mode </span>
+          <span class="material-symbols-sharp"> dark_mode </span>
+        </div>
+      </div>
+      <!-- End of top -->
+      <div class="gauge-charts">
+        <h2>Gauge Charts</h2>
+        <div class="item">
+          <div id="temperature-gauge"></div>
+        </div>
+        <div class="item">
+          <div id="oxygen-gauge"></div>
+        </div>
+        <div class="item">
+          <div id="heartrate-gauge"></div>
+        </div>
+      </div>
+    </div>
+    <div class="toggle-container">
+      <input type="checkbox" id="toggle-btn" class="toggle-checkbox">
+      <label for="toggle-btn" class="toggle-label"></label>
+    </div>
+  </div>
+  <script>
+    {{{payload.script}}}
+  </script>
+</body>
+
+</html>
