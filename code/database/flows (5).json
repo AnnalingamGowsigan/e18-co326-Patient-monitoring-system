@@ -1,0 +1,993 @@
+[
+    {
+        "id": "098aa5ee3ff5101c",
+        "type": "tab",
+        "label": "web",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "fbc7583e00774a30",
+        "type": "http in",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "url": "/web",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 340,
+        "y": 60,
+        "wires": [
+            [
+                "a5ebc553da1af8c2"
+            ]
+        ]
+    },
+    {
+        "id": "c314763f331f3aab",
+        "type": "template",
+        "z": "098aa5ee3ff5101c",
+        "name": "HTML",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "html",
+        "syntax": "mustache",
+        "template": "<!DOCTYPE html>\n<html lang=\"en\">\n\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Patient Monitoring System</title>\n  <link href=\"https://fonts.googleapis.com/icon?family=Material+Symbols+Sharp\" rel=\"stylesheet\" />\n  <script src=\"https://cdn.plot.ly/plotly-2.16.1.min.js\"></script>\n  <style>\n    {{{payload.style}}}\n  </style>\n</head>\n\n<body>\n  <div class=\"container\">\n    <aside>\n      <div class=\"top\">\n        <div class=\"close\" id=\"close-btn\">\n\n        </div>\n      </div>\n\n    </aside>\n    <main>\n      <h1>Patient Monitoring System</h1>\n\n      <div class=\"bulb-container\">\n        <div id=\"bulb\" class=\"bulb\"></div>\n        <input type=\"checkbox\" id=\"toggle-btn\" class=\"toggle-checkbox\">\n        <label for=\"toggle-btn\" class=\"toggle-label\"></label>\n      </div>\n\n      \n      <div class=\"insights\">\n        <div class=\"temperature\">\n          <div class=\"middle\">\n            <div class=\"left\">\n              <h3>Temperature</h3>\n              <h1 id=\"temperature\">0 C</h1>\n            </div>\n            <div class=\"icon\">\n              <span class=\"material-symbols-sharp\"> device_thermostat </span>\n            </div>\n          </div>\n        </div>\n        <!-- End of heartrate -->\n        <div class=\"heartrate\">\n          <div class=\"middle\">\n            <div class=\"left\">\n              <h3>Heart Rate</h3>\n              <h1 id=\"heartrate\">0 C</h1>\n            </div>\n            <div class=\"icon\">\n              <span class=\"material-symbols-sharp\">favorite</span>\n            </div>\n          </div>\n        </div>\n        <!-- End of heartrate -->\n        <div class=\"oxygen\">\n          <div class=\"middle\">\n            <div class=\"left\">\n              <h3>Oxygen Saturation</h3>\n              <h1 id=\"oxygen\">0 %</h1>\n            </div>\n            <div class=\"icon\">\n              <span class=\"material-symbols-sharp\">\n                  humidity_percentage\n                </span>\n            </div>\n          </div>\n        </div>\n\n        <!-- End of humidity -->\n      </div>\n      <!-- End of Insights -->\n      <div class=\"histories\">\n        <h2>Historical Charts</h2>\n        <div class=\"history-charts\">\n          <div id=\"temperature-history\" class=\"history-divs\"></div>\n          <div id=\"oxygen-history\" class=\"oxygen-divs\"></div>\n          <div id=\"heartrate-history\" class=\"history-divs\"></div>\n        </div>\n      </div>\n    </main>\n    <div class=\"right\">\n      <div class=\"top\">\n        <button id=\"menu-btn\">\n            <span class=\"material-symbols-sharp\"> menu </span>\n          </button>\n        <div class=\"theme-toggler\">\n          <span class=\"material-symbols-sharp active\"> light_mode </span>\n          <span class=\"material-symbols-sharp\"> dark_mode </span>\n        </div>\n      </div>\n      <!-- End of top -->\n      <div class=\"gauge-charts\">\n        <h2>Gauge Charts</h2>\n        <div class=\"item\">\n          <div id=\"temperature-gauge\"></div>\n        </div>\n        <div class=\"item\">\n          <div id=\"oxygen-gauge\"></div>\n        </div>\n        <div class=\"item\">\n          <div id=\"heartrate-gauge\"></div>\n        </div>\n      </div>\n    </div>\n    <div class=\"toggle-container\">\n      <input type=\"checkbox\" id=\"toggle-btn\" class=\"toggle-checkbox\">\n      <label for=\"toggle-btn\" class=\"toggle-label\"></label>\n    </div>\n  </div>\n  <script>\n    {{{payload.script}}}\n  </script>\n</body>\n\n</html>",
+        "output": "str",
+        "x": 930,
+        "y": 200,
+        "wires": [
+            [
+                "045c78d5c132aa86"
+            ]
+        ]
+    },
+    {
+        "id": "045c78d5c132aa86",
+        "type": "http response",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1070,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "a5ebc553da1af8c2",
+        "type": "template",
+        "z": "098aa5ee3ff5101c",
+        "name": "Javascript",
+        "field": "payload.script",
+        "fieldType": "msg",
+        "format": "javascript",
+        "syntax": "mustache",
+        "template": "// Target specific HTML items\nconst sideMenu = document.querySelector(\"aside\");\nconst menuBtn = document.querySelector(\"#menu-btn\");\nconst closeBtn = document.querySelector(\"#close-btn\");\nconst themeToggler = document.querySelector(\".theme-toggler\");\n\n// Holds the background color of all chart\nvar chartBGColor = getComputedStyle(document.body).getPropertyValue(\n  \"--chart-background\"\n);\nvar chartFontColor = getComputedStyle(document.body).getPropertyValue(\n  \"--chart-font-color\"\n);\nvar chartAxisColor = getComputedStyle(document.body).getPropertyValue(\n  \"--chart-axis-color\"\n);\n\n/*\n  Event listeners for any HTML click\n*/\nmenuBtn.addEventListener(\"click\", () => {\n  sideMenu.style.display = \"block\";\n});\n\ncloseBtn.addEventListener(\"click\", () => {\n  sideMenu.style.display = \"none\";\n});\n\nthemeToggler.addEventListener(\"click\", () => {\n  document.body.classList.toggle(\"dark-theme-variables\");\n  themeToggler.querySelector(\"span:nth-child(1)\").classList.toggle(\"active\");\n  themeToggler.querySelector(\"span:nth-child(2)\").classList.toggle(\"active\");\n\n  // Update Chart background\n  chartBGColor = getComputedStyle(document.body).getPropertyValue(\n    \"--chart-background\"\n  );\n  chartFontColor = getComputedStyle(document.body).getPropertyValue(\n    \"--chart-font-color\"\n  );\n  chartAxisColor = getComputedStyle(document.body).getPropertyValue(\n    \"--chart-axis-color\"\n  );\n  updateChartsBackground();\n});\n\n\n// ***********************************************\n\nconst toggleBtn = document.getElementById('toggle-btn');\nconst bulb = document.getElementById('bulb');\n\ntoggleBtn.addEventListener('change', function () {\n  if (this.checked) {\n    // Turn bulb ON\n    bulb.style.backgroundColor = \"red\";\n\n    const newValue = \"on\"; // Replace with the new value you want to set\n\n    fetch('/ledUpdate', {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'text/plain'\n      },\n      body: newValue\n    })\n      .then((response) => response.json())\n      .then((jsonResponse) => {\n        // Handle the response after updating the variable\n        console.log(jsonResponse);\n      })\n      .catch((error) => {\n        // Handle any errors that occurred during the request\n        console.error(error);\n      });\n\n  } else {\n    // Turn bulb OFF\n    bulb.style.backgroundColor = \"#ccc\";\n\n    const newValue = \"off\"; // Replace with the new value you want to set\n\n    fetch('/ledUpdate', {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'text/plain'\n      },\n      body: newValue\n    })\n      .then((response) => response.json())\n      .then((jsonResponse) => {\n        // Handle the response after updating the variable\n        console.log(jsonResponse);\n      })\n      .catch((error) => {\n        // Handle any errors that occurred during the request\n        console.error(error);\n      });\n  }\n});\n\n\n// Function to turn the toggle button ON\nfunction turnToggleButtonOn() {\n  toggleBtn.checked = true;\n  bulb.style.backgroundColor = \"red\";\n}\n\n// Function to turn the toggle button OFF\nfunction turnToggleButtonOff() {\n  toggleBtn.checked = false;\n  bulb.style.backgroundColor = \"#ccc\";\n}\n\n\n\n\n\n\n\n/*\n  Plotly.js graph and chart setup code\n*/\nvar temperatureHistoryDiv = document.getElementById(\"temperature-history\");\nvar oxygenHistoryDiv = document.getElementById(\"oxygen-history\");\nvar heartrateHistoryDiv = document.getElementById(\"heartrate-history\");\n\nvar temperatureGaugeDiv = document.getElementById(\"temperature-gauge\");\nvar oxygenGaugeDiv = document.getElementById(\"oxygen-gauge\");\nvar heartrateGaugeDiv = document.getElementById(\"heartrate-gauge\");\n\nconst historyCharts = [temperatureHistoryDiv, oxygenHistoryDiv, heartrateHistoryDiv];\n\nconst gaugeCharts = [temperatureGaugeDiv, oxygenGaugeDiv, heartrateGaugeDiv];\n\n// History Data\nvar temperatureTrace = {\n  x: [],\n  y: [],\n  name: \"Temperature\",\n  mode: \"lines+markers\",\n  type: \"line\",\n};\nvar oxygenTrace = {\n  x: [],\n  y: [],\n  name: \"Humidity\",\n  mode: \"lines+markers\",\n  type: \"line\",\n};\nvar heartrateTrace = {\n  x: [],\n  y: [],\n  name: \"Heartrate\",\n  mode: \"lines+markers\",\n  type: \"line\",\n};\n\nvar temperatureLayout = {\n  autosize: true,\n  title: {\n    text: \"Temperature\",\n  },\n  font: {\n    size: 12,\n    color: chartFontColor,\n    family: \"poppins, san-serif\",\n  },\n  colorway: [\"#05AD86\"],\n  margin: { t: 40, b: 40, l: 60, r: 60, pad: 10 },\n  plot_bgcolor: chartBGColor,\n  paper_bgcolor: chartBGColor,\n  xaxis: {\n    color: chartAxisColor,\n    linecolor: chartAxisColor,\n    gridwidth: \"2\",\n    autorange: true,\n  },\n  yaxis: {\n    color: chartAxisColor,\n    linecolor: chartAxisColor,\n    gridwidth: \"2\",\n    autorange: true,\n  },\n};\nvar oxygenLayout = {\n  autosize: true,\n  title: {\n    text: \"Oxygen Saturation\",\n  },\n  font: {\n    size: 12,\n    color: chartFontColor,\n    family: \"poppins, san-serif\",\n  },\n  colorway: [\"#05AD86\"],\n  margin: { t: 40, b: 40, l: 30, r: 30, pad: 0 },\n  plot_bgcolor: chartBGColor,\n  paper_bgcolor: chartBGColor,\n  xaxis: {\n    color: chartAxisColor,\n    linecolor: chartAxisColor,\n    gridwidth: \"2\",\n  },\n  yaxis: {\n    color: chartAxisColor,\n    linecolor: chartAxisColor,\n  },\n};\n\nvar heartrateLayout = {\n  autosize: true,\n  title: {\n    text: \"Heart Rate\",\n  },\n  font: {\n    size: 12,\n    color: chartFontColor,\n    family: \"poppins, san-serif\",\n  },\n  colorway: [\"#05AD86\"],\n  margin: { t: 40, b: 40, l: 30, r: 30, pad: 0 },\n  plot_bgcolor: chartBGColor,\n  paper_bgcolor: chartBGColor,\n  xaxis: {\n    color: chartAxisColor,\n    linecolor: chartAxisColor,\n    gridwidth: \"2\",\n  },\n  yaxis: {\n    color: chartAxisColor,\n    linecolor: chartAxisColor,\n  },\n};\n\nvar config = { responsive: true };\n\nwindow.addEventListener(\"load\", (event) => {\n  Plotly.newPlot(\n    temperatureHistoryDiv,\n    [temperatureTrace],\n    temperatureLayout,\n    config\n  );\n  Plotly.newPlot(oxygenHistoryDiv, [oxygenTrace], oxygenLayout, config);\n  Plotly.newPlot(\n    heartrateHistoryDiv,\n    [heartrateTrace],\n    heartrateLayout,\n    config\n  );\n\n  // Run it initially\n  handleDeviceChange(mediaQuery);\n});\n\n// Gauge Data\nvar temperatureData = [\n  {\n    domain: { x: [0, 1], y: [0, 1] },\n    value: 0,\n    title: { text: \"Temperature\" },\n    type: \"indicator\",\n    mode: \"gauge+number+delta\",\n    delta: { reference: 37 },\n    gauge: {\n      axis: { range: [null, 50] },\n      steps: [\n        { range: [0, 30], color: \"lightgray\" },\n        { range: [30, 40], color: \"gray\" },\n      ],\n      threshold: {\n        line: { color: \"red\", width: 4 },\n        thickness: 0.75,\n        value: 37,\n      },\n    },\n  },\n];\n\nvar oxygenData = [\n  {\n    domain: { x: [0, 1], y: [0, 1] },\n    value: 0,\n    title: { text: \"Oxygen Saturation\" },\n    type: \"indicator\",\n    mode: \"gauge+number+delta\",\n    delta: { reference: 97 },\n    gauge: {\n      axis: { range: [null, 100] },\n      steps: [\n        { range: [0, 95], color: \"lightgray\" },\n        { range: [95, 100], color: \"gray\" },\n      ],\n      threshold: {\n        line: { color: \"red\", width: 4 },\n        thickness: 0.75,\n        value: 97,\n      },\n    },\n  },\n];\n\nvar heartrateData = [\n  {\n    domain: { x: [0, 1], y: [0, 1] },\n    value: 0,\n    title: { text: \"Heart Rate\" },\n    type: \"indicator\",\n    mode: \"gauge+number+delta\",\n    delta: { reference: 72 },\n    gauge: {\n      axis: { range: [null, 100] },\n      steps: [\n        { range: [0, 70], color: \"lightgray\" },\n        { range: [70, 80], color: \"gray\" },\n      ],\n      threshold: {\n        line: { color: \"red\", width: 4 },\n        thickness: 0.75,\n        value: 72,\n      },\n    },\n  },\n];\n\nvar layout = { width: 300, height: 250, margin: { t: 0, b: 0, l: 0, r: 0 } };\n\nPlotly.newPlot(temperatureGaugeDiv, temperatureData, layout);\nPlotly.newPlot(oxygenGaugeDiv, oxygenData, layout);\nPlotly.newPlot(heartrateGaugeDiv, heartrateData, layout);\n\n// Will hold the arrays we receive from our DHT22 sensor\n// Temperature\nlet newTempXArray = [];\nlet newTempYArray = [];\n// Humidity\nlet newOxygenXArray = [];\nlet newOxygenYArray = [];\n// heartrate\nlet newHeartrateXArray = [];\nlet newHeartrateYArray = [];\n\n// The maximum number of data points displayed on our scatter/line graph\nlet MAX_GRAPH_POINTS = 12;\nlet ctr = 0;\n\n// Callback function that will retrieve our latest sensor readings and redraw our Gauge with the latest readings\nfunction updateSensorReadings(jsonResponse) {\n  console.log(typeof jsonResponse);\n  console.log(jsonResponse);\n\n  let temperature = Number(jsonResponse.temperature).toFixed(2);\n  let humidity = Number(jsonResponse.humidity).toFixed(2);\n\n  updateBoxes(temperature, humidity);\n\n  updateGauge(temperature, humidity);\n\n  // Update Temperature Line Chart\n  updateCharts(\n    temperatureHistoryDiv,\n    newTempXArray,\n    newTempYArray,\n    temperature\n  );\n  // Update Humidity Line Chart\n  updateCharts(\n    humidityHistoryDiv,\n    newHumidityXArray,\n    newHumidityYArray,\n    humidity\n  );\n}\n\n\n//new function for update the temp values\n\nfunction updateTemperatureReadings(temp) {\n  let temperature = Number(temp).toFixed(2);\n\n  updateTemperatureBox(temperature);\n\n  updateTemperatureGauge(temperature);\n\n  // Update Temperature Line Chart\n  updateCharts(\n    temperatureHistoryDiv,\n    newTempXArray,\n    newTempYArray,\n    temperature\n  );\n}\n\n\n// function ended\n\n//new function for update the oxygen values\n\nfunction updateOxygenReadings(oxy) {\n  let oxygen = Number(oxy).toFixed(2);\n\n  updateOxygenBox(oxygen);\n\n  updateOxygenGauge(oxygen);\n\n  // Update oxygen Line Chart\n  updateCharts(\n    oxygenHistoryDiv,\n    newOxygenXArray,\n    newOxygenYArray,\n    oxygen\n  );\n}\n\n\n// function ended\n\n//new function for update the heartrate values\n\nfunction updateHeartrateReadings(hr) {\n  let heartrate = Number(hr).toFixed(2);\n\n  updateHeartrateBox(heartrate);\n\n  updateHeartrateGauge(heartrate);\n\n  // Update Temperature Line Chart\n  updateCharts(\n    heartrateHistoryDiv,\n    newHeartrateXArray,\n    newHeartrateYArray,\n    heartrate\n  );\n}\n\n\n// function ended\n\n\n\nfunction updateBoxes(temperature, humidity) {\n  let temperatureDiv = document.getElementById(\"temperature\");\n  let humidityDiv = document.getElementById(\"humidity\");\n\n  temperatureDiv.innerHTML = temperature + \" C\";\n  humidityDiv.innerHTML = humidity + \" %\";\n}\n\n\n//new function for update temp box\nfunction updateTemperatureBox(temperature) {\n  let temperatureDiv = document.getElementById(\"temperature\");\n  temperatureDiv.innerHTML = temperature + \" °C   \" + \" /  \" + ((temperature * 9 / 5) + 32).toFixed(2) + \" F\";\n}\n//ended \n\n//new function for update oxygen box\nfunction updateOxygenBox(oxygen) {\n  let oxygenDiv = document.getElementById(\"oxygen\");\n  oxygenDiv.innerHTML = oxygen + \" %\";\n}\n//ended \n\n//new function for update heartrate box\nfunction updateHeartrateBox(heartrate) {\n  let heartrateDiv = document.getElementById(\"heartrate\");\n  heartrateDiv.innerHTML = heartrate + \" BPM\";\n}\n//ended \n\nfunction updateGauge(temperature, humidity) {\n  var temperature_update = {\n    value: temperature,\n  };\n  var humidity_update = {\n    value: humidity,\n  };\n\n  Plotly.update(temperatureGaugeDiv, temperature_update);\n  Plotly.update(humidityGaugeDiv, humidity_update);\n}\n\n\n//update gauge new function\nfunction updateTemperatureGauge(temperature) {\n  var temperature_update = {\n    value: temperature,\n  };\n\n  Plotly.update(temperatureGaugeDiv, temperature_update);\n}\n\n\n//function ended\n\n//update oxygen gauge new function\nfunction updateOxygenGauge(oxygen) {\n  var oxygen_update = {\n    value: oxygen,\n  };\n\n  Plotly.update(oxygenGaugeDiv, oxygen_update);\n}\n\n\n//function ended\n\n//update heartrate gauge new function\nfunction updateHeartrateGauge(heartrate) {\n  var heartrate_update = {\n    value: heartrate,\n  };\n\n  Plotly.update(heartrateGaugeDiv, heartrate_update);\n}\n\n\n//function ended\n\nfunction updateCharts(lineChartDiv, xArray, yArray, sensorRead) {\n  if (xArray.length >= MAX_GRAPH_POINTS) {\n    xArray.shift();\n  }\n  if (yArray.length >= MAX_GRAPH_POINTS) {\n    yArray.shift();\n  }\n  xArray.push(ctr++);\n  yArray.push(sensorRead);\n\n  var data_update = {\n    x: [xArray],\n    y: [yArray],\n  };\n\n  Plotly.update(lineChartDiv, data_update);\n}\n\nfunction updateChartsBackground() {\n  // updates the background color of historical charts\n  var updateHistory = {\n    plot_bgcolor: chartBGColor,\n    paper_bgcolor: chartBGColor,\n    font: {\n      color: chartFontColor,\n    },\n    xaxis: {\n      color: chartAxisColor,\n      linecolor: chartAxisColor,\n    },\n    yaxis: {\n      color: chartAxisColor,\n      linecolor: chartAxisColor,\n    },\n  };\n  historyCharts.forEach((chart) => Plotly.relayout(chart, updateHistory));\n\n  // updates the background color of gauge charts\n  var gaugeHistory = {\n    plot_bgcolor: chartBGColor,\n    paper_bgcolor: chartBGColor,\n    font: {\n      color: chartFontColor,\n    },\n    xaxis: {\n      color: chartAxisColor,\n      linecolor: chartAxisColor,\n    },\n    yaxis: {\n      color: chartAxisColor,\n      linecolor: chartAxisColor,\n    },\n  };\n  gaugeCharts.forEach((chart) => Plotly.relayout(chart, gaugeHistory));\n}\n\nconst mediaQuery = window.matchMedia(\"(max-width: 600px)\");\n\nmediaQuery.addEventListener(\"change\", function (e) {\n  handleDeviceChange(e);\n});\n\nfunction handleDeviceChange(e) {\n  if (e.matches) {\n    console.log(\"Inside Mobile\");\n    var updateHistory = {\n      width: 323,\n      height: 250,\n      \"xaxis.autorange\": true,\n      \"yaxis.autorange\": true,\n    };\n    historyCharts.forEach((chart) => Plotly.relayout(chart, updateHistory));\n  } else {\n    var updateHistory = {\n      width: 550,\n      height: 260,\n      \"xaxis.autorange\": true,\n      \"yaxis.autorange\": true,\n    };\n    historyCharts.forEach((chart) => Plotly.relayout(chart, updateHistory));\n  }\n}\n\nfunction retrieveSensorReadings() {\n  // fetch(`/sensorReadings`)\n  //   .then((response) => response.json())\n  //   .then((jsonResponse) => {\n  //     updateSensorReadings(jsonResponse);\n  //   });\n\n  fetch(`/temperature`)\n    .then((response) => response.text())\n    .then((textResponse) => {\n      console.log(\"temperature\",textResponse);\n      updateTemperatureReadings(textResponse)\n    });\n\n  fetch(`/IR`)\n    .then((response) => response.text())\n    .then((textResponse) => {\n      console.log(\"IR\", textResponse);\n    });\n\n  fetch(`/HR`)\n    .then((response) => response.text())\n    .then((textResponse) => {\n      console.log(\"HR\", textResponse);\n      updateHeartrateReadings(textResponse)\n    });\n\n  fetch(`/SPO2`)\n    .then((response) => response.text())\n    .then((textResponse) => {\n      console.log(\"SPO2\", textResponse);\n      updateOxygenReadings(textResponse)\n    });\n\n  fetch('/led')\n    .then((response) => response.text())\n    .then((textResponse) => {\n      console.log(textResponse);\n      if(textResponse == 'on'){\n        turnToggleButtonOn();\n      }else{\n        turnToggleButtonOff()\n      }\n    });\n\n  // var temperature = Math.random() * 10 + 20;\n  // var humidity = Math.random() * 20 + 40;\n  // var pressure = Math.random() * 200 + 900;\n\n  // var sensorReadings = {\n  //   temperature: temperature,\n  //   humidity: humidity,\n  //   pressure: pressure\n  // };\n  // var sensorReadings = msg.payload;\n  // console.log(sensorReadings);\n  // updateSensorReadings(sensorReadings);\n}\n\n// Continuos loop that runs evry 3 seconds to update our web page with the latest sensor readings\n(function loop() {\n  setTimeout(() => {\n    retrieveSensorReadings();\n    loop();\n  }, 3000);\n})();\n",
+        "output": "str",
+        "x": 600,
+        "y": 200,
+        "wires": [
+            [
+                "485bb7dcb66de76f"
+            ]
+        ]
+    },
+    {
+        "id": "485bb7dcb66de76f",
+        "type": "template",
+        "z": "098aa5ee3ff5101c",
+        "name": "CSS",
+        "field": "payload.style",
+        "fieldType": "msg",
+        "format": "css",
+        "syntax": "mustache",
+        "template": "@import url(\"https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap\");\n\n:root {\n  --color-primary: #7380ec;\n  --color-danger: #ff7782;\n  --color-success: #41f1b6;\n  --color-warning: #ffbb55;\n  --color-white: #fff;\n  --color-info-dark: #7d8da1;\n  --color-info-light: #dce1eb;\n  --color-dark: #363949;\n  --color-light: rgba(132, 139, 200, 0.18);\n  --color-primary-variant: #111e88;\n  --color-dark-variant: #677483;\n  --color-background: #f6f6f9;\n\n  --color-insight-1: rgb(99, 209, 35);\n  --color-insight-2: rgb(233, 245, 59);\n  --color-insight-3: rgb(204, 52, 67);\n  --color-insight-4: rgb(56, 183, 238);\n\n  --card-border-radius: 2rem;\n  --border-radius-1: 0.4rem;\n  --border-radius-2: 0.8rem;\n  --border-radius-3: 1.2rem;\n\n  --card-padding: 1.3rem;\n  --padding-1: 1.2rem;\n\n  --box-shadow: 0 2rem 3rem var(--color-light);\n\n  /* Plotly Chart Color */\n  --chart-background: #fff;\n  --chart-font-color: #444;\n  --chart-axis-color: #444;\n}\n/* Dark Theme Variables */\n.dark-theme-variables {\n  --color-background: #090d3e;\n  --color-white: #0b0f4a;\n  --color-primary: #fff;\n  --color-dark: #edeffd;\n  --color-dark-variant: #fff;\n  --color-light: rgba(0, 0, 0, 0.4);\n  --box-shadow: 0 2rem 3rem var(--color-light);\n\n  --chart-background: #0d1256;\n  --chart-font-color: #fff;\n  --chart-axis-color: #fff;\n}\n\n* {\n  margin: 0;\n  padding: 0;\n  outline: 0;\n  appearance: none;\n  text-decoration: none;\n  list-style: none;\n  box-sizing: border-box;\n}\n\nhtml {\n  font-size: 14px;\n}\nbody {\n  width: 100vw;\n  height: 100vh;\n  font-family: poppins, san-serif;\n  font-size: 0.88rem;\n  background: var(--color-background);\n  user-select: none;\n  overflow-x: hidden;\n  color: var(--color-dark-variant);\n}\n.container {\n  display: grid;\n  width: 96%;\n  margin: 0 auto;\n  gap: 1.8rem;\n  grid-template-columns: 0rem 80rem 23rem;\n}\na {\n  color: var(--color-dark);\n}\nimg {\n  display: block;\n  width: 100%;\n}\nh1 {\n  font-weight: 800;\n  font-size: 1.8rem;\n}\nh2 {\n  font-size: 1.4rem;\n}\nh3 {\n  font-size: 0.87rem;\n}\nh4 {\n  font-size: 0.8rem;\n}\nh5 {\n  font-size: 0.77rem;\n}\nsmall {\n  font-size: 0.75rem;\n}\n.profile-photo {\n  width: 2.8rem;\n  height: 2.8rem;\n  border-radius: 50%;\n  overflow: hidden;\n}\n.text-muted {\n  color: var(--color-info-light);\n}\np {\n  color: var(--color-dark-variant);\n}\nb {\n  color: var(--color-dark-variant);\n}\n.primary {\n  color: var(--color-primary);\n}\n.danger {\n  color: var(--color-danger);\n}\n.success {\n  color: var(--color-success);\n}\n.warning {\n  color: var(--color-warning);\n}\n\n/***** Sidebar Image*****/\naside {\n  height: 100vh;\n}\naside .top {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin-top: 1.4rem;\n}\naside .logo {\n  display: flex;\n  gap: 0.8rem;\n}\naside .logo img {\n  width: 2rem;\n  height: 2re;\n}\naside .close {\n  display: none;\n}\n/***** Sidebar Links*****/\naside .sidebar {\n  display: flex;\n  flex-direction: column;\n  height: 86vh;\n  position: relative;\n  top: 3rem;\n}\naside h3 {\n  font-weight: 500;\n}\n\naside .sidebar a {\n  display: flex;\n  color: var(--color-info-dark);\n  margin-left: 2rem;\n  gap: 1rem;\n  align-items: center;\n  position: relative;\n  height: 3.7rem;\n  transition: all 300ms ease;\n}\n\naside .sidebar a span {\n  font-size: 1.6rem;\n  transition: all 300ms ease;\n}\n\n/* aside .sidebar a:last-child {\n  position: absolute;\n  bottom: 2rem;\n  width: 100%;\n} */\n\naside .sidebar a.active {\n  background: var(--color-light);\n  color: var(--color-primary);\n  margin-left: 0;\n}\naside .sidebar a.active:before {\n  content: \"\";\n  width: 6px;\n  height: 100%;\n  background: var(--color-primary);\n}\naside .sidebar a.active span {\n  color: var(--color-primary);\n  margin-left: calc(1rem - 6px);\n}\naside .sidebar a:hover {\n  color: var(--color-primary);\n}\n\naside .sidebar a:hover span {\n  margin-left: 1rem;\n}\n\n/************* main ******************/\nmain {\n  margin-top: 1.4rem;\n}\n\nmain .insights {\n  display: grid;\n  grid-template-columns: repeat(2, 1fr);\n  gap: 1.6rem;\n}\nmain .insights > div {\n  background: var(--color-white);\n  padding: var(--card-padding);\n  border-radius: var(--card-border-radius);\n  margin-top: 1rem;\n  box-shadow: var(--box-shadow);\n  transition: all 300ms ease;\n}\n\nmain .insights > div:hover {\n  box-shadow: none;\n}\n\nmain .insights > div span {\n  background: var(--color-primary);\n  padding: 0.5rem;\n  border-radius: 50%;\n  color: var(--color-white);\n  font-size: 2rem;\n}\n\nmain .insights > div.temperature span {\n  background: var(--color-insight-1);\n}\n\nmain .insights > div.humidity span {\n  background: var(--color-insight-2);\n}\n\nmain .insights > div.pressure span {\n  background: var(--color-insight-3);\n}\nmain .insights > div.altitude span {\n  background: var(--color-insight-4);\n}\n\nmain .insights > div .middle {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n}\n\nmain .insights h3 {\n  margin: 1rem 0 0.6rem;\n  font-size: 1rem;\n}\n\n/************* End of Insights ******************/\nmain .histories {\n  margin-top: 2rem;\n}\n\nmain .history-charts {\n  display: grid;\n  grid-template-columns: repeat(2, 1fr);\n  background: var(--color-white);\n  border-radius: var(--border-radius-1);\n  padding: var(--card-padding);\n  text-align: center;\n  box-shadow: var(--box-shadow);\n}\nmain .history-charts:hover {\n  box-shadow: none;\n}\n\nmain .history-charts .history-divs {\n  text-align: center;\n}\n\nmain .histories h2 {\n  margin-bottom: 0.8rem;\n}\n\n/* ********RIGHT ********** */\n.right {\n  margin-top: 1.4rem;\n}\n.right .top {\n  display: flex;\n  justify-content: end;\n  gap: 2rem;\n}\n.right .top button {\n  display: none;\n}\n\n.right .theme-toggler {\n  background: var(--color-light);\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  height: 1.6rem;\n  width: 4.2rem;\n  cursor: pointer;\n  border-radius: var(--border-radius-1);\n}\n\n.right .theme-toggler span {\n  font-size: 1.2rem;\n  width: 50%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.right .theme-toggler span.active {\n  background: var(--color-primary);\n  color: white;\n  border-radius: var(--border-radius-1);\n}\n\n/* GAUGE CHARTS */\n.right .gauge-charts {\n  margin-top: 2rem;\n}\n.right .gauge-charts .item {\n  background: var(--color-white);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  gap: 1rem;\n  margin-bottom: 0.7rem;\n  padding: 1.4rem var(--card-padding);\n  border-radius: var(--border-radius-3);\n  box-shadow: var(--box-shadow);\n  transition: all 300ms ease;\n}\n.right .gauge-charts .item:hover {\n  box-shadow: none;\n}\n\n.right .gauge-charts .item .right {\n  display: flex;\n  justify-content: space-between;\n  align-items: start;\n  margin: 0;\n  width: 100%;\n}\n\n.right .gauge-charts .item .icon {\n  padding: 0.6rem;\n  color: var(--color-white);\n  border-radius: 50%;\n  background: var(--color-primary);\n  display: flex;\n}\n\n.right .gauge-charts .item.offline .icon {\n  background: var(--color-danger);\n}\n\n/* MEDIA QUERIES */\n@media screen and (max-width: 1200px) {\n  .container {\n    width: 94%;\n    grid-template-columns: 7rem auto 23rem;\n  }\n  aside .logo h2 {\n    display: none;\n  }\n\n  aside .sidebar h3 {\n    display: none;\n  }\n  aside .sidebar a {\n    width: 5.6rem;\n  }\n  aside .sidebar a:last-child {\n    position: relative;\n    margin-top: 1.8rem;\n  }\n  main .insights {\n    grid-template-columns: 1fr;\n  }\n  main .histories {\n    width: 94%;\n    position: absolute;\n    left: 50%;\n    transform: translateX(-50%);\n    margin: 2rem 0 0 8.8rem;\n  }\n  main .histories .history-charts {\n    grid-template-columns: 1fr;\n    width: 54vw;\n  }\n}\n\n@media only screen and (max-width: 992px) {\n  .container {\n    width: 94%;\n    grid-template-columns: 12rem auto 23rem;\n  }\n  main .insights {\n    grid-template-columns: repeat(2, 1fr);\n    gap: 1.6rem;\n  }\n  main .histories .history-charts {\n    grid-template-columns: 1fr;\n    align-items: center;\n    justify-content: center;\n  }\n}\n\n@media screen and (max-width: 768px) {\n  .container {\n    width: 100%;\n    grid-template-columns: 1fr;\n    /* height: 100vh; */\n  }\n  aside {\n    position: fixed;\n    left: -100%;\n    background: var(--color-white);\n    width: 18rem;\n    z-index: 3;\n    box-shadow: 1rem 3rem 4rem var(--color-light);\n    height: 100vh;\n    padding-right: var(--card-padding);\n    display: none;\n    animation: showMenu 400ms ease forwards;\n  }\n  @keyframes showMenu {\n    to {\n      left: 0;\n    }\n  }\n  aside .logo {\n    margin-left: 1rem;\n  }\n  aside .logo h2 {\n    display: inline;\n  }\n  aside .sidebar h3 {\n    display: inline;\n  }\n  aside .sidebar a {\n    width: 100%;\n    height: 3.4rem;\n  }\n  /* aside .sidebar a:last-child {\n    position: absolute;\n    bottom: 5rem;\n  } */\n  aside .close {\n    display: inline-block;\n    cursor: pointer;\n  }\n  main {\n    margin: 8rem 2rem 2rem 2rem;\n    padding: 0 1rem;\n  }\n  main .histories {\n    position: relative;\n    margin: 3rem 0 0 0;\n    width: 100%;\n  }\n  main .histories .history-charts {\n    width: 100%;\n    justify-content: center;\n    align-items: center;\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-items: center;\n  }\n  .right {\n    width: 90%;\n    margin: 0 auto 0rem auto;\n  }\n  .right .top {\n    position: fixed;\n    top: 0;\n    left: 0;\n    align-items: center;\n    padding: 0 0.8rem;\n    height: 4.6rem;\n    background: var(--color-white);\n    width: 100%;\n    margin: 0;\n    z-index: 2;\n    box-shadow: 0 1rem 1 rem var(--color-light);\n  }\n  .right .top .theme-toggler {\n    width: 4.4rem;\n    position: absolute;\n    right: 2rem;\n  }\n  .right .profile .info {\n    display: none;\n  }\n\n  .right .top button {\n    display: inline-block;\n    background: transparent;\n    cursor: pointer;\n    color: var(--color-dark);\n    position: absolute;\n    left: 1rem;\n  }\n  .right .top button span {\n    font-size: 2rem;\n  }\n}\n\n@media screen and (max-width: 600px) {\n  .container {\n    width: 100%;\n    grid-template-columns: 1fr;\n    margin: 1rem 0 1rem 0;\n  }\n  main {\n    margin: 5rem 1rem 1rem 1rem;\n    padding: 0 1rem;\n    width: 90vw;\n  }\n\n  main .insights {\n    gap: 0.4rem;\n  }\n  main .insights > div {\n    padding: 0.4rem;\n  }\n\n  main .history-charts {\n    display: grid;\n    grid-template-columns: 1fr;\n  }\n}\n\n\n\n/* --------------------------------------------------------------------------- */\n\n.bulb-container {\n  display: flex;\n  align-items: center;\n}\n\n.bulb {\n  width: 80px;\n  height: 80px;\n  background-color: #ccc;\n  border-radius: 50%;\n  margin-right: 10px;\n  transition: background-color 0.3s ease;\n}\n\n.toggle-checkbox {\n  display: none;\n}\n\n.toggle-label {\n  display: block;\n  position: relative;\n  width: 50px;\n  height: 26px;\n  background-color: #ccc;\n  border-radius: 26px;\n  cursor: pointer;\n  transition: background-color 0.3s ease;\n}\n\n.toggle-label:before {\n  content: \"\";\n  position: absolute;\n  top: 2px;\n  left: 2px;\n  width: 22px;\n  height: 22px;\n  background-color: white;\n  border-radius: 50%;\n  transition: transform 0.3s ease;\n}\n\n.toggle-checkbox:checked + .toggle-label {\n  background-color: #4CAF50;\n}\n\n.toggle-checkbox:checked + .toggle-label:before {\n  transform: translateX(24px);\n}\n\n.bulb-container .toggle-checkbox:checked ~ #bulb {\n  background-color: yellow;\n}\n\n",
+        "output": "str",
+        "x": 750,
+        "y": 60,
+        "wires": [
+            [
+                "c314763f331f3aab"
+            ]
+        ]
+    },
+    {
+        "id": "65d189f0c27abbe4",
+        "type": "mqtt in",
+        "z": "098aa5ee3ff5101c",
+        "name": "led",
+        "topic": "led",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "10e78a89.5b4fd5",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 410,
+        "y": 1780,
+        "wires": [
+            [
+                "c7fafed45feb54a1"
+            ]
+        ]
+    },
+    {
+        "id": "24c6bb632153251f",
+        "type": "debug",
+        "z": "098aa5ee3ff5101c",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 1780,
+        "wires": []
+    },
+    {
+        "id": "c7fafed45feb54a1",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Store Message",
+        "func": "global.set(\"led\", msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 1780,
+        "wires": [
+            [
+                "24c6bb632153251f"
+            ]
+        ]
+    },
+    {
+        "id": "752aac7d992a081d",
+        "type": "http in",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "url": "/led",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 420,
+        "y": 1860,
+        "wires": [
+            [
+                "ad5ee16a4d711420"
+            ]
+        ]
+    },
+    {
+        "id": "ad5ee16a4d711420",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Get Stored Message",
+        "func": "msg.payload = global.get(\"led\");\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 670,
+        "y": 1860,
+        "wires": [
+            [
+                "000f1581f6f9179d"
+            ]
+        ]
+    },
+    {
+        "id": "000f1581f6f9179d",
+        "type": "http response",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 840,
+        "y": 1860,
+        "wires": []
+    },
+    {
+        "id": "c9b4b0a25cab46f1",
+        "type": "http in",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "url": "/ledupdate",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 400,
+        "y": 1920,
+        "wires": [
+            [
+                "6f821a430946763c"
+            ]
+        ]
+    },
+    {
+        "id": "6f821a430946763c",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Update Stored Message",
+        "func": "var newReading = msg.payload;\n\n// Update the global variable\nglobal.set(\"led\", newReading);\n\n// Prepare the response\nmsg.payload = {\n  status: \"success\",\n  message: \"Variable updated successfully\"\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1920,
+        "wires": [
+            [
+                "5ca4b31d0cb93cbb",
+                "cef06c9e60645fe6"
+            ]
+        ]
+    },
+    {
+        "id": "5ca4b31d0cb93cbb",
+        "type": "http response",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 910,
+        "y": 1920,
+        "wires": []
+    },
+    {
+        "id": "c48df3aa023a7a11",
+        "type": "debug",
+        "z": "098aa5ee3ff5101c",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1140,
+        "y": 2000,
+        "wires": []
+    },
+    {
+        "id": "cef06c9e60645fe6",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Get Stored Message",
+        "func": "msg.payload = global.get(\"led\");\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 2000,
+        "wires": [
+            [
+                "c48df3aa023a7a11",
+                "fa58c70f26693c03"
+            ]
+        ]
+    },
+    {
+        "id": "fa58c70f26693c03",
+        "type": "mqtt out",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "topic": "output",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "10e78a89.5b4fd5",
+        "x": 1110,
+        "y": 2060,
+        "wires": []
+    },
+    {
+        "id": "75cbcf8b001c683a",
+        "type": "mqtt in",
+        "z": "098aa5ee3ff5101c",
+        "name": "IR",
+        "topic": "UoP_CO_326_E18_10_MAX30102_IR",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "10e78a89.5b4fd5",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 470,
+        "y": 340,
+        "wires": [
+            [
+                "b5c63629ead38684",
+                "fbf635bad4b63717"
+            ]
+        ]
+    },
+    {
+        "id": "91d3d13b730b67ca",
+        "type": "debug",
+        "z": "098aa5ee3ff5101c",
+        "name": "UoP_CO_326_E18_10_MAX30102_IR",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 950,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "b5c63629ead38684",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Store IR",
+        "func": "global.set(\"UoP_CO_326_E18_10_MAX30102_IR\", msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 340,
+        "wires": [
+            [
+                "91d3d13b730b67ca"
+            ]
+        ]
+    },
+    {
+        "id": "e1d6b1cb55a0e590",
+        "type": "mqtt in",
+        "z": "098aa5ee3ff5101c",
+        "name": "HR",
+        "topic": "UoP_CO_326_E18_10_MAX30102_HR",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "10e78a89.5b4fd5",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 410,
+        "y": 760,
+        "wires": [
+            [
+                "afb12fa2e842e469",
+                "b39ec68674ea3f3e"
+            ]
+        ]
+    },
+    {
+        "id": "0a4819ba57ef324e",
+        "type": "debug",
+        "z": "098aa5ee3ff5101c",
+        "name": "UoP_CO_326_E18_10_MAX30102_HR",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 920,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "afb12fa2e842e469",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Store Message",
+        "func": "global.set(\"UoP_CO_326_E18_10_MAX30102_HR\", msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 760,
+        "wires": [
+            [
+                "0a4819ba57ef324e"
+            ]
+        ]
+    },
+    {
+        "id": "cf1b35559cbd1a9d",
+        "type": "mqtt in",
+        "z": "098aa5ee3ff5101c",
+        "name": "temperature",
+        "topic": "UoP_CO_326_E18_10_DS18B20_temperature",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "10e78a89.5b4fd5",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 410,
+        "y": 1460,
+        "wires": [
+            [
+                "74319415d90facfa",
+                "33629e39abdd59ca"
+            ]
+        ]
+    },
+    {
+        "id": "6e5ab774629c02c6",
+        "type": "debug",
+        "z": "098aa5ee3ff5101c",
+        "name": "UoP_CO_326_E18_10_DS18B20_temperature",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 920,
+        "y": 1460,
+        "wires": []
+    },
+    {
+        "id": "74319415d90facfa",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Store Message",
+        "func": "global.set(\"UoP_CO_326_E18_10_DS18B20_temperature\", msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 600,
+        "y": 1460,
+        "wires": [
+            [
+                "6e5ab774629c02c6"
+            ]
+        ]
+    },
+    {
+        "id": "bb6ed75ac0f1e9f3",
+        "type": "mqtt in",
+        "z": "098aa5ee3ff5101c",
+        "name": "SPO2",
+        "topic": "UoP_CO_326_E18_10_MAX30102_SPO2",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "10e78a89.5b4fd5",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 430,
+        "y": 1100,
+        "wires": [
+            [
+                "3db339cb6e2d3ab6",
+                "b604c7c25c57819d"
+            ]
+        ]
+    },
+    {
+        "id": "491310fd47250db5",
+        "type": "debug",
+        "z": "098aa5ee3ff5101c",
+        "name": "UoP_CO_326_E18_10_MAX30102_SPO2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 950,
+        "y": 1100,
+        "wires": []
+    },
+    {
+        "id": "3db339cb6e2d3ab6",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Store Message",
+        "func": "global.set(\"UoP_CO_326_E18_10_MAX30102_SPO2\", msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 1100,
+        "wires": [
+            [
+                "491310fd47250db5"
+            ]
+        ]
+    },
+    {
+        "id": "03bd10b8de2c0ef1",
+        "type": "http in",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "url": "/IR",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 550,
+        "y": 560,
+        "wires": [
+            [
+                "05b0457a7ed5490c"
+            ]
+        ]
+    },
+    {
+        "id": "05b0457a7ed5490c",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Get Stored IR",
+        "func": "msg.payload = global.get(\"UoP_CO_326_E18_10_MAX30102_IR\");\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 760,
+        "y": 560,
+        "wires": [
+            [
+                "aaae4218977263b2"
+            ]
+        ]
+    },
+    {
+        "id": "aaae4218977263b2",
+        "type": "http response",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 980,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "4f87dd7b3fe4aaa5",
+        "type": "http in",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "url": "/HR",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 460,
+        "y": 960,
+        "wires": [
+            [
+                "cf2a18504266a003"
+            ]
+        ]
+    },
+    {
+        "id": "cf2a18504266a003",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Get Stored Message",
+        "func": "msg.payload = global.get(\"UoP_CO_326_E18_10_MAX30102_HR\");\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 960,
+        "wires": [
+            [
+                "eba9437bf4c954de"
+            ]
+        ]
+    },
+    {
+        "id": "eba9437bf4c954de",
+        "type": "http response",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 880,
+        "y": 960,
+        "wires": []
+    },
+    {
+        "id": "c7c3f71e9b67598b",
+        "type": "http in",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "url": "/SPO2",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 530,
+        "y": 1300,
+        "wires": [
+            [
+                "1150e1cea8c8cfdf"
+            ]
+        ]
+    },
+    {
+        "id": "1150e1cea8c8cfdf",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Get Stored Message",
+        "func": "msg.payload = global.get(\"UoP_CO_326_E18_10_MAX30102_SPO2\");\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 1300,
+        "wires": [
+            [
+                "3b3afe65d651aa16"
+            ]
+        ]
+    },
+    {
+        "id": "3b3afe65d651aa16",
+        "type": "http response",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 940,
+        "y": 1300,
+        "wires": []
+    },
+    {
+        "id": "149479f4a1357481",
+        "type": "http in",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "url": "/temperature",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 590,
+        "y": 1680,
+        "wires": [
+            [
+                "456f04eeaa35556d"
+            ]
+        ]
+    },
+    {
+        "id": "456f04eeaa35556d",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Get Stored Message",
+        "func": "msg.payload = global.get(\"UoP_CO_326_E18_10_DS18B20_temperature\");\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 810,
+        "y": 1680,
+        "wires": [
+            [
+                "41e8282e02f64365"
+            ]
+        ]
+    },
+    {
+        "id": "41e8282e02f64365",
+        "type": "http response",
+        "z": "098aa5ee3ff5101c",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 980,
+        "y": 1680,
+        "wires": []
+    },
+    {
+        "id": "b39ec68674ea3f3e",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Get Temperature Readings",
+        "func": "const hr = msg.payload;\nconst sqlQuery = \"INSERT INTO UoP_CO_326_E18_10_MAX30102_HR (patient_id,heartRate) VALUES ('1','?')\";\nconst values = [hr];\n\nmsg.topic = sqlQuery;\nmsg.payload = values;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 840,
+        "wires": [
+            [
+                "5c3b64e70b658820"
+            ]
+        ]
+    },
+    {
+        "id": "5c3b64e70b658820",
+        "type": "mysql",
+        "z": "098aa5ee3ff5101c",
+        "mydb": "4636057e6a361105",
+        "name": "",
+        "x": 930,
+        "y": 840,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f8076b8906cc2e62",
+        "type": "inject",
+        "z": "098aa5ee3ff5101c",
+        "name": "create table",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "drop table if EXISTS UoP_CO_326_E18_10_MAX30102_HR;  CREATE TABLE UoP_CO_326_E18_10_MAX30102_HR(id INT AUTO_INCREMENT PRIMARY KEY,patient_id char(8)  ,time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,heartRate char(8)  NULL);",
+        "payload": "",
+        "payloadType": "date",
+        "x": 670,
+        "y": 900,
+        "wires": [
+            [
+                "5c3b64e70b658820"
+            ]
+        ]
+    },
+    {
+        "id": "fbf635bad4b63717",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Get Temperature Readings",
+        "func": "const ir = msg.payload;\nconst sqlQuery = \"INSERT INTO UoP_CO_326_E18_10_MAX30102_IR (patient_id,ir) VALUES ('1','?')\";\nconst values = [ir];\n\nmsg.topic = sqlQuery;\nmsg.payload = values;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 420,
+        "wires": [
+            [
+                "e9b615eb606b277b"
+            ]
+        ]
+    },
+    {
+        "id": "e9b615eb606b277b",
+        "type": "mysql",
+        "z": "098aa5ee3ff5101c",
+        "mydb": "4636057e6a361105",
+        "name": "",
+        "x": 970,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "68c534e0d259abce",
+        "type": "inject",
+        "z": "098aa5ee3ff5101c",
+        "name": "create table",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "drop table if EXISTS UoP_CO_326_E18_10_MAX30102_IR;  CREATE TABLE UoP_CO_326_E18_10_MAX30102_IR(id INT AUTO_INCREMENT PRIMARY KEY,patient_id char(8)  ,time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,ir char(8)  NULL);",
+        "payload": "",
+        "payloadType": "date",
+        "x": 710,
+        "y": 480,
+        "wires": [
+            [
+                "e9b615eb606b277b"
+            ]
+        ]
+    },
+    {
+        "id": "b604c7c25c57819d",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Get Temperature Readings",
+        "func": "const spo2 = msg.payload;\nconst sqlQuery = \"INSERT INTO UoP_CO_326_E18_10_MAX30102_SPO2 (patient_id,spo2) VALUES ('1','?')\";\nconst values = [spo2];\n\nmsg.topic = sqlQuery;\nmsg.payload = values;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 1160,
+        "wires": [
+            [
+                "03b525957072504f"
+            ]
+        ]
+    },
+    {
+        "id": "03b525957072504f",
+        "type": "mysql",
+        "z": "098aa5ee3ff5101c",
+        "mydb": "4636057e6a361105",
+        "name": "",
+        "x": 950,
+        "y": 1160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "55bedfe33d8d5d99",
+        "type": "inject",
+        "z": "098aa5ee3ff5101c",
+        "name": "create table",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "drop table if EXISTS UoP_CO_326_E18_10_MAX30102_SPO2;  CREATE TABLE UoP_CO_326_E18_10_MAX30102_SPO2(id INT AUTO_INCREMENT PRIMARY KEY,patient_id char(8)  ,time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, spo2 char(8)  NULL);",
+        "payload": "",
+        "payloadType": "date",
+        "x": 690,
+        "y": 1220,
+        "wires": [
+            [
+                "03b525957072504f"
+            ]
+        ]
+    },
+    {
+        "id": "33629e39abdd59ca",
+        "type": "function",
+        "z": "098aa5ee3ff5101c",
+        "name": "Get Temperature Readings",
+        "func": "const temperature = msg.payload;\nconst sqlQuery = \"INSERT INTO UoP_CO_326_E18_10_DS18B20_temperature (patient_id,temperature) VALUES ('1','?')\";\nconst values = [temperature];\n\nmsg.topic = sqlQuery;\nmsg.payload = values;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 1540,
+        "wires": [
+            [
+                "cafd1f4f7c37e85e"
+            ]
+        ]
+    },
+    {
+        "id": "cafd1f4f7c37e85e",
+        "type": "mysql",
+        "z": "098aa5ee3ff5101c",
+        "mydb": "4636057e6a361105",
+        "name": "",
+        "x": 970,
+        "y": 1540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9889cef13a3b7f05",
+        "type": "inject",
+        "z": "098aa5ee3ff5101c",
+        "name": "create table",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "drop table if EXISTS UoP_CO_326_E18_10_DS18B20_temperature;  CREATE TABLE UoP_CO_326_E18_10_DS18B20_temperature(id INT AUTO_INCREMENT PRIMARY KEY,patient_id char(8)  ,time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,temperature char(8)  NULL);",
+        "payload": "",
+        "payloadType": "date",
+        "x": 710,
+        "y": 1600,
+        "wires": [
+            [
+                "cafd1f4f7c37e85e"
+            ]
+        ]
+    },
+    {
+        "id": "10e78a89.5b4fd5",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "4636057e6a361105",
+        "type": "MySQLdatabase",
+        "name": "MySQL Database",
+        "host": "127.0.0.1",
+        "port": "3306",
+        "db": "nodered",
+        "tz": "",
+        "charset": ""
+    }
+]
