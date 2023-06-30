@@ -11,6 +11,9 @@
 #include "MAX30105.h"
 #include "spo2_algorithm.h"
 
+// Declare a flag variable
+bool flag = true;
+
 MAX30105 particleSensor;
 
 #define MAX_BRIGHTNESS 255
@@ -43,9 +46,6 @@ DallasTemperature Temperature_sensor(&oneWire); // Pass our oneWire reference to
 float temperatureC;
 float temperatureF;
 
-// Change the variable to your Raspberry Pi IP address, so it connects to your MQTT broker
-const char *mqtt_server = "0.tcp.in.ngrok.io";
-
 // Initializes the espClient. You should change the espClient name if you have multiple ESPs running in your home automation system
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -64,7 +64,7 @@ void reconnect()
       Serial.println("connected");
       // Subscribe or resubscribe to a topic
       // You can subscribe to more topics (to control more LEDs in this example)
-      client.subscribe("room/light");
+      client.subscribe("led_control");
     }
     else
     {
@@ -96,19 +96,24 @@ void callback(String topic, byte *message, unsigned int length)
   Serial.println();
 
   // If a message is received on the topic room/lamp, you check if the message is either on or off. Turns the lamp GPIO according to the message
-  if (topic == "room/light")
+  if (topic == "led_control")
   {
     Serial.print("Changing Room Light to ");
-    if (messageInfo == "on")
+    if (messageInfo == "reset")
     {
-      digitalWrite(4, HIGH);
-      Serial.print("On");
+      // digitalWrite(ledPin, HIGH);
+      Serial.print("reset");
+
+      // Reset the flag
+      flag = true;
     }
 
     else if (messageInfo == "off")
     {
-      digitalWrite(4, LOW);
+      digitalWrite(ledPin, LOW);
       Serial.print("Off");
+
+      flag = false;
     }
   }
   Serial.println();
@@ -130,7 +135,7 @@ void initWiFi()
   Serial.println(WiFi.localIP());
 }
 
-void getReadingFromTempertureSensor()
+int getReadingFromTempertureSensor()
 {
   // for calculating Temperature value
   Temperature_sensor.requestTemperatures();
@@ -142,10 +147,16 @@ void getReadingFromTempertureSensor()
   Serial.print(temperatureF);
   Serial.println("F");
   Serial.println();
+
+  String temperatureCStr = String(temperatureC);
+  client.publish("UoP_CO_326_E18_10_DS18B20_temperature", temperatureCStr.c_str());
+
+  return temperatureC;
+
   // delay(5000);
 }
 
-void getSPO2()
+void measureHeartRateAndSpO2()
 {
   bufferLength = 100; // buffer length of 100 stores 4 seconds of samples running at 25sps
 
@@ -224,6 +235,22 @@ void getSPO2()
   //}
 }
 
+void maintainConnectionWithMQTT()
+{
+  if (!client.connected())
+  {
+    reconnect();
+  }
+
+  if (!client.loop())
+  {
+    client.connect("ESP8266Client22");
+  }
+
+  // MQTT connection and other loop code
+  client.loop();
+}
+
 // the setup function runs once when you press reset or power the board
 void setup()
 {
@@ -259,39 +286,39 @@ void setup()
   //////////////////////////////////////////
 
   // ledclight
-  pinMode(4, OUTPUT);
+  pinMode(ledPin, OUTPUT);
 
   Temperature_sensor.begin(); // Start the Temperature sensor
 
   initWiFi();
   // Sets your mqtt broker and sets the callback function
   // The callback function is what receives messages and actually controls the LEDs
-  client.setServer(mqtt_server, 13704);
+  client.setServer(mqtt_server, mqtt_server_port_number);
   client.setCallback(callback);
 }
 
 void loop()
 {
-  if (!client.connected())
+
+  maintainConnectionWithMQTT();
+
+  measureHeartRateAndSpO2();
+
+  int temp = getReadingFromTempertureSensor();
+
+  // Check the flag state
+  if (flag)
   {
-    reconnect();
+    if (temp > 28)
+    {
+      digitalWrite(4, HIGH); // turn the LED on (HIGH is the voltage level)
+
+      // Perform actions when the flag is true
+      client.publish("led", "on");
+    }
   }
 
-  if (!client.loop())
-  {
-    client.connect("ESP8266Client22");
-  }
-
-  // MQTT connection and other loop code
-  client.loop();
-  getSPO2();
-
-  // digitalWrite(4, HIGH);   // turn the LED on (HIGH is the voltage level)
   // delay(1000);                       // wait for a second
   // digitalWrite(4, LOW);    // turn the LED off by making the voltage LOW
   // delay(1000);                       // wait for a second
-
-  getReadingFromTempertureSensor();
-  client.publish("UoP_CO_326_E18_10_DS18B20_temperature", "25");
-  // delay(5000);
 }
