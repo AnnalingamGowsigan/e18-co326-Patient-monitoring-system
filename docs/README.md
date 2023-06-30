@@ -35,7 +35,7 @@ title:
 
 ## Hardware
 
-<img src="./images/hardware.png"  width="50%" height="50%">
+<img src="./images/harware.png"  width="50%" height="50%">
 
 ## Links
 
