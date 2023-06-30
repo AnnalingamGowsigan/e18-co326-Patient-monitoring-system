@@ -9,7 +9,7 @@ title:
 
 [comment]: # "This is the standard layout for the project, but you can clean this and use your own template"
 
-# Project Title
+# Patient monitoring system
 
 ---
 
@@ -19,13 +19,13 @@ This is a sample image, to show how to add images to your page. To learn more op
 
 
 ## Team
--  eNumber, Name, [email](mailto:name@email.com)
--  eNumber, Name, [email](mailto:name@email.com)
--  eNumber, Name, [email](mailto:name@email.com)
+-  E/18/013, Abhilash R., [email](e18013@eng.pd.ac.lk)
+-  E/18/058, De Alwis K.K.M., [email](e18058@eng.pd.ac.lk)
+-  E/18/115, Gowsigan A., [email](e18115@eng.pdn.ac.lk)
 
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Other Sub Topics](#other-sub-topics)
+2. [Hardware](#hardware)
 3. [Links](#links)
 
 ---
@@ -34,7 +34,7 @@ This is a sample image, to show how to add images to your page. To learn more op
 
  description of the real world problem and solution, impact
 
-## Other Sub Topics
+## Hardware
 
 .....
 
