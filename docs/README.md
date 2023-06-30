@@ -12,9 +12,6 @@ title:
 # Patient monitoring system
 
 ---
-
-This is a sample image, to show how to add images to your page. To learn more options, please refer [this](https://projects.ce.pdn.ac.lk/docs/faq/how-to-add-an-image/)
-
 ![Sample Image](./images/sample.png)
 
 
@@ -32,11 +29,13 @@ This is a sample image, to show how to add images to your page. To learn more op
 
 ## Introduction
 
- description of the real world problem and solution, impact
+ <img src="./images/problem.png"  width="50%" height="50%">
+
+<img src="./images/solution.png"  width="50%" height="50%">
 
 ## Hardware
 
-.....
+<img src="./images/hardware.png"  width="50%" height="50%">
 
 ## Links
 
